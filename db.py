@@ -49,7 +49,7 @@ def getAuthorsByQuery(name, page, size):
     authors = []
     for item in res:
         author = {}
-        author['scopus_id'] = item.data()['scopus_id']
+        author['scopusId'] = item.data()['scopus_id']
         author['names'] = item.data()['names']
         author['affiliations'] = item.data()['affiliations']
         author['articles'] = item.data()['articles']
