@@ -3,7 +3,7 @@ from flask_cors import CORS
 from flask_restful import Resource, Api
 from flask_json import FlaskJSON, json_response
 
-from db import getAuthorsByName
+from db import getAuthorsByQuery
 
 app = Flask(__name__)
 
@@ -20,10 +20,10 @@ def output_json(data, code, headers=None):
 
 class Author(Resource):
     def get(self):
-        name = request.args.get('name').lower()
+        name = request.args.get('query').lower()
         page = int(request.args.get('page'))
         size = int(request.args.get('size'))
-        return getAuthorsByName(name, page, size)
+        return getAuthorsByQuery(name, page, size)
 
 
-api.add_resource(Author, '/author/get-authors-by-name')
+api.add_resource(Author, '/author/get-authors-by-query')

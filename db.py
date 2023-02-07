@@ -4,7 +4,7 @@ from py2neo import Graph
 graph = Graph("bolt://localhost:7687", auth=("neo4j", "narias"))
 
 
-def getAuthorsByName(name, page, size):
+def getAuthorsByQuery(name, page, size):
 
     query = """
     match (au:Author) 
@@ -31,7 +31,9 @@ def getAuthorsByName(name, page, size):
     toLower(au.auth_name) contains '"""+ name +"""' or 
     toLower(au.initials) CONTAINS '"""+ name +"""' or 
     au.scopus_id contains '"""+ name +"""'
-    optional match (aff:Affiliation)-[:AFFILIATED_WITH]-(au)-[:WROTE]-(ar:Article)-[:USES]-(to:Topic)
+    optional match (aff:Affiliation)-[:AFFILIATED_WITH]-(au)
+    optional match (au)-[:WROTE]-(ar:Article)
+    optional match (ar:Article)-[:USES]-(to:Topic)
     return au.scopus_id as scopus_id, 
     [au.first_name + " " + au.last_name, au.auth_name, au.initials] as names, 
     collect(distinct(aff.name)) as affiliations, 
