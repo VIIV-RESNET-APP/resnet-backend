@@ -34,6 +34,8 @@ def getAuthorsByQuery(name, page, size):
     optional match (aff:Affiliation)-[:AFFILIATED_WITH]-(au)
     optional match (au)-[:WROTE]-(ar:Article)
     optional match (ar:Article)-[:USES]-(to:Topic)
+    with au, ar, aff, to
+    order by au.first_name asc, au.last_name asc
     return au.scopus_id as scopus_id, 
     [au.first_name + " " + au.last_name, au.auth_name, au.initials] as names, 
     collect(distinct(aff.name)) as affiliations, 
