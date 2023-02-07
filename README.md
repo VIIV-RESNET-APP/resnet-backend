@@ -1,1 +1,3 @@
-# resnet-backend
+# Resnet Backend
+
+API REST del sistema ResNet
