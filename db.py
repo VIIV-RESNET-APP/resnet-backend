@@ -39,7 +39,7 @@ def getAuthorsByQuery(name, page, size):
     return au.scopus_id as scopus_id, 
     [au.first_name + " " + au.last_name, au.auth_name, au.initials] as names, 
     collect(distinct(aff.name)) as affiliations, 
-    count(ar) as articles, 
+    count(distinct(ar)) as articles, 
     collect(distinct(to.name)) as topics
     SKIP """+str((page-1)*size)+""" LIMIT """+str(size)+"""
     """
@@ -58,4 +58,24 @@ def getAuthorsByQuery(name, page, size):
     
     return {'total': total, 'data': authors}
 
+
+
+def getAuthorById(id):
+
+    query="""
+    match (au:Author {scopus_id:'"""+ id +"""'})
+    optional match (au)-[:AFFILIATED_WITH]-(af:Affiliation)
+    optional match (au)-[:WROTE]-(ar:Article)
+    return au.scopus_id as scopusId, au.first_name as firstName, 
+    au.last_name as lastName, au.auth_name as authName, au.initials as initials, 
+    collect(distinct(af.name)) as affiliations, 
+    collect({scopusId: ar.scopus_id, title: ar.title}) as articles
+    """
+    res = graph.run(query).data()
+
+    if len(res) > 0:
+        return res[0]
+
+
+    
     
