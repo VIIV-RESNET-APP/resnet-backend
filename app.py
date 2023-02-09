@@ -3,7 +3,7 @@ from flask_cors import CORS
 from flask_restful import Resource, Api
 from flask_json import FlaskJSON, json_response
 
-from db import getAuthorsByQuery, getAuthorById
+from db import getAuthorsByQuery, getAuthorById, getArticleById
 
 app = Flask(__name__)
 
@@ -34,6 +34,16 @@ class Author(Resource):
             abort(400)
 
 
+class Article(Resource):
+    def get(self, id):
+        response = getArticleById(id)
+        if response:
+            return response
+        else:
+            abort(400)
 
-api.add_resource(Authors, '/author/get-authors-by-query')
-api.add_resource(Author,  '/author/<string:id>')
+
+
+api.add_resource(Authors, '/authors/get-authors-by-query')
+api.add_resource(Author, '/author/<string:id>')
+api.add_resource(Article, '/article/<string:id>')

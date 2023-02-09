@@ -77,5 +77,19 @@ def getAuthorById(id):
         return res[0]
 
 
-    
-    
+def getArticleById(id):
+
+    query="""
+    match (ar:Article {scopus_id: '"""+ id +"""'})
+    optional match (ar)-[:WROTE]-(au:Author)
+    optional match (ar)-[:BELONGS_TO]-(af:Affiliation)
+    optional match (ar)-[:USES]-(to:Topic)
+    RETURN ar.title as title, ar.abstract as abstract, 
+    collect(distinct({scopusId: au.scopus_id, name: au.auth_name})) as authors, 
+    collect(distinct(af.name)) as affiliations, 
+    collect(distinct(to.name)) as topics
+    """
+    res = graph.run(query).data()
+
+    if len(res) > 0:
+        return res[0]
