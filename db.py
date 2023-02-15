@@ -93,3 +93,49 @@ def getArticleById(id):
 
     if len(res) > 0:
         return res[0]
+
+
+def getCoauthorsById(id):
+
+    query="""
+    match (au:Author {scopus_id:'"""+ id +"""'})-[r1:CO_AUTHORED]-(coAu:Author)
+    return collect(distinct({scopusId: coAu.scopus_id, initials: coAu.initials, 
+    firstName: coAu.first_name, lastName: coAu.last_name})) as nodes
+    """
+
+    res = graph.run(query).data()
+
+    nodes = res[0]['nodes']
+
+    if len(nodes) > 0:
+        query="""
+        match (au:Author {scopus_id:'"""+ id +"""'})-[r1:CO_AUTHORED]-(coAu:Author)
+        return (collect(distinct({source: au.scopus_id, target: coAu.scopus_id,
+        collabStrength: r1.collab_strength}))) as links
+        """
+
+        res = graph.run(query).data()
+
+        links = res[0]['links']
+
+        query="""
+        match (au:Author {scopus_id:'"""+ id +"""'})-[r1:CO_AUTHORED]-(coAu:Author)-[r2:CO_AUTHORED]-(coCoAu:Author)
+        match (au:Author {scopus_id:'"""+ id +"""'})-[:CO_AUTHORED]-(coCoAu:Author)
+        where coAu.scopus_id > coCoAu.scopus_id
+        return collect(distinct({source: coAu.scopus_id,target: coCoAu.scopus_id, 
+        collabStrength: r2.collab_strength})) as links
+        """
+
+        res = graph.run(query).data()
+
+        links = links + res[0]['links']
+
+        return {"nodes": nodes, "links": links}
+
+    else:
+        links = []
+
+    return {"nodes": nodes, "links": links}
+
+
+    
