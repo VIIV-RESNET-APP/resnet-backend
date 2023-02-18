@@ -111,7 +111,7 @@ def getCoauthorsById(id):
         query="""
         match (au:Author {scopus_id:'"""+ id +"""'})-[r1:CO_AUTHORED]-(coAu:Author)
         return (collect(distinct({source: au.scopus_id, target: coAu.scopus_id,
-        collabStrength: r1.collab_strength}))) as links
+        collabStrength: toFloat(r1.collab_strength)}))) as links
         """
 
         res = graph.run(query).data()
@@ -123,7 +123,7 @@ def getCoauthorsById(id):
         match (au:Author {scopus_id:'"""+ id +"""'})-[:CO_AUTHORED]-(coCoAu:Author)
         where coAu.scopus_id > coCoAu.scopus_id
         return collect(distinct({source: coAu.scopus_id,target: coCoAu.scopus_id, 
-        collabStrength: r2.collab_strength})) as links
+        collabStrength: toFloat(r2.collab_strength)})) as links
         """
 
         res = graph.run(query).data()
