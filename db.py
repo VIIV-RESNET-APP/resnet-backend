@@ -82,12 +82,10 @@ def getAuthorsByQuery(name, page, size):
         res = getDB().run(query).data()
 
         for item in res:
-            print("item", item['scopus_id'])
             authorIndex = next((index for (index, d) in enumerate(authors) if d["scopusId"] == item['scopus_id']), None)
             if authorIndex != None:
                 authors[authorIndex]['topics']  =  item['topics']
         
-
     return {'total': total, 'data': authors}
 
 
@@ -115,17 +113,6 @@ def getAuthorById(id):
         """
 
         res = getDB().run(query)
-
-        return {**author, 'topics': [item.data()['name'] for item in res]}
-
-
-        query = """
-        match (au:Author {scopus_id:'""" + id + """'})-[:WROTE]-(ar:Article)-[:USES]-(to:Topic)
-        with to, count(to.name) as frequency
-        return to.name as name order by frequency desc
-        """
-
-        res = graph.run(query)
 
         return {**author, 'topics': [item.data()['name'] for item in res]}
 
@@ -298,8 +285,6 @@ def getYearsByArticles(articlesList):
 def getArticlesByFilterYears(filterType, years, articles):
     filterType = '' if filterType == 'include' else 'not'
 
-    print(', '.join(f'{w}' for w in years))
-    print(', '.join(f'"{w}"' for w in articles))
     query = """
     with [""" + ', '.join(f'"{w}"' for w in articles) + """] as articlesList,
     [""" + ', '.join(f'{w}' for w in years) + """] as yearsList
@@ -309,7 +294,6 @@ def getArticlesByFilterYears(filterType, years, articles):
     """
     res = getDB().run(query).data()
 
-    print(res[0]['articles'])
     return res[0]['articles']
 
 
@@ -336,7 +320,7 @@ def getCommunity(authList):
     firstName: au.first_name, lastName: au.last_name})  as nodes
     """
 
-    res = graph.run(query).data()
+    res = getDB().run(query).data()
 
     nodes = res[0]['nodes']
 
@@ -348,7 +332,7 @@ def getCommunity(authList):
     collabStrength: r.collab_strength}) as links
     """
 
-    res = graph.run(query).data()
+    res = getDB().run(query).data()
 
     links = res[0]['links']
 
@@ -364,7 +348,7 @@ def getAffiliationsByAuthors(authList):
     return collect(distinct({scopusId: aff.scopus_id, name: aff.name})) as affiliations
     """
 
-    res = graph.run(query).data()
+    res = getDB().run(query).data()
 
     return res[0]['affiliations']
 
@@ -381,7 +365,7 @@ def getAuthorsByAffiliationFilters(filterType, affiliations, authors):
     return collect(distinct(au.scopus_id)) as authors
     """
 
-    res = graph.run(query).data()
+    res = getDB().run(query).data()
 
     return res[0]['authors']
 
@@ -399,7 +383,7 @@ def getArticlesByIds(articlesList, page, size):
     SKIP """+str((page-1)*size)+""" LIMIT """+str(size)+"""
     """
 
-    res = graph.run(query)
+    res = getDB().run(query)
 
     articles = []
     for item in res:
@@ -421,7 +405,7 @@ def getYearsByArticles(articlesList):
     return years order by years desc
     """
 
-    res = graph.run(query)
+    res = getDB().run(query)
 
     years = []
     for item in res:
@@ -442,7 +426,7 @@ def getArticlesByFilterYears(filterType, years, articles):
     where ar.scopus_id in articlesList and """ + filterType + """ date(ar.publication_date).year in yearsList
     return collect(ar.scopus_id) as articles
     """
-    res = graph.run(query).data()
+    res = getDB().run(query).data()
 
     print(res[0]['articles'])
     return res[0]['articles']
