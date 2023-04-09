@@ -1,11 +1,8 @@
 from py2neo import Graph
 from tfidf import Model
 
-
-
 def getDB():
     return Graph("bolt://18.222.107.113:7687", auth=("neo4j", "narias98"))
-
 
 def getAuthorsByQuery(name, page, size):
 
