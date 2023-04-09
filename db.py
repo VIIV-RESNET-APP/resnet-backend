@@ -4,7 +4,7 @@ from tfidf import Model
 
 
 def getDB():
-    return Graph("bolt://localhost:7687", auth=("neo4j", "narias"))
+    return Graph("bolt://18.222.107.113:7687", auth=("neo4j", "narias98"))
 
 
 def getAuthorsByQuery(name, page, size):
