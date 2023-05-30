@@ -1,11 +1,8 @@
 from py2neo import Graph
 from tfidf import Model
 
-
-
 def getDB():
     return Graph("bolt://localhost:7687", auth=("neo4j", "narias"))
-
 
 def getAuthorsByQuery(name, page, size):
 
@@ -124,7 +121,8 @@ def getArticleById(id):
     optional match (ar)-[:WROTE]-(au:Author)
     optional match (ar)-[:BELONGS_TO]-(af:Affiliation)
     optional match (ar)-[:USES]-(to:Topic)
-    RETURN ar.title as title, ar.abstract as abstract, ar.publication_date as publicationDate,
+    RETURN ar.doi as doi, ar.title as title, ar.abstract as abstract, 
+    ar.publication_date as publicationDate,
     collect(distinct({scopusId: au.scopus_id, name: au.auth_name})) as authors, 
     collect(distinct(af.name)) as affiliations, 
     collect(distinct(to.name)) as topics
