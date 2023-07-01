@@ -443,7 +443,7 @@ def getRandomAuthors():
     MATCH (au:Author)-[r:CO_AUTHORED]-(coAu:Author) 
     WITH au, COUNT(r) as size
     ORDER BY RAND()
-    WHERE size >= 50
+    WHERE size >= 90
     RETURN au.auth_name as value, size 
     SKIP 0 LIMIT 10
     """
@@ -462,7 +462,7 @@ def getRandomTopics():
     MATCH (topics)-[r:USES]-(ar:Article)
     WITH topics, count(r) as size 
     ORDER BY RAND()
-    WHERE size >= 30
+    WHERE size >= 60
     return topics.name as value, size
     LIMIT 10
     """
