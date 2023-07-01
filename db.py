@@ -445,7 +445,7 @@ def getRandomAuthors():
     ORDER BY RAND()
     WHERE size >= 50
     RETURN au.auth_name as value, size 
-    SKIP 0 LIMIT 10
+    SKIP 0 LIMIT 7
     """
 
     res = getDB().run(query).data()
