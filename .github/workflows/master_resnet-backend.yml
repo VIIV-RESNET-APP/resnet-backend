@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'resnet-backend'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F6C1106F05304ADB9C8EEF9A16D039C9 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_8A0315123BC847FEA33D9F8CBAA0F2A5 }}
