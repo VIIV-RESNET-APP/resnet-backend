@@ -8,6 +8,7 @@ API REST del sistema ResNet
 - [Requisitos previos](#requisitos-previos)
 - [Instalación](#instalacion)
 - [Uso](#uso)
+- [Endpoints](#endpoints)
 - [Licencia](#licencia)
 
 ## Descripción
