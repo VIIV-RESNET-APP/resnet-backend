@@ -14,8 +14,7 @@ API REST del sistema ResNet
 
 ## Descripción
 
-<div style="text-align: justify">Frontend del sistema web ResNet que tiene como propósito extraer y presentar datos de redes de coautoría de investigadores ecuatorianos. Esta herramienta ofrece la posibilidad de visualizar información académica, buscar expertos en áreas de investigación y analizar temas relacionados. Para mejorar la precisión en las búsquedas, se han implementado técnicas de Information Retrieval. El objetivo principal es proporcionar a los usuarios una experiencia eficiente en la exploración y análisis de información académica.</div>
-
+Frontend del sistema web ResNet que tiene como propósito extraer y presentar datos de redes de coautoría de investigadores ecuatorianos. Esta herramienta ofrece la posibilidad de visualizar información académica, buscar expertos en áreas de investigación y analizar temas relacionados. Para mejorar la precisión en las búsquedas, se han implementado técnicas de Information Retrieval. El objetivo principal es proporcionar a los usuarios una experiencia eficiente en la exploración y análisis de información académica.
 
 ## Requisitos previos
 
