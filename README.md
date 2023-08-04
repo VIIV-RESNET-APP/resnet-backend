@@ -4,9 +4,10 @@ API REST del sistema ResNet
 
 ## Tabla de contenidos
 
-- [Descripción](#descripcion)
+- [Descripción](#descripción)
 - [Requisitos previos](#requisitos-previos)
-- [Instalación](#instalacion)
+- [Instalación](#instalación)
+- [Configuración](#configuración)
 - [Uso](#uso)
 - [Endpoints](#endpoints)
 - [Licencia](#licencia)
@@ -31,6 +32,10 @@ source venv/bin/activate   # Para sistemas Unix/Linux
 venv\Scripts\activate      # Para sistemas Windows
 ```
 4. Instala las dependencias: pip install -r requirements.txt
+
+## Configuración
+
+Antes de ejecutar el backend, asegúrate de configurar correctamente los parámetros necesarios, como la conexión a la base de datos. Para ello, completa los valores correspondientes en el archivo config.py.
 
 ## Uso
 Para iniciar el servidor, ejecuta el siguiente comando:
