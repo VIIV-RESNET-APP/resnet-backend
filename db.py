@@ -1,8 +1,9 @@
 from py2neo import Graph
 from tfidf import Model
+import config
 
 def getDB():
-    return Graph("bolt://20.127.223.251:7687", auth=("neo4j", "narias98"))
+    return Graph('bolt://'+config.DATABASE_HOST+':7687', auth=(config.DATABASE_USER, config.DATABASE_PASSWORD))
 
 def getAuthorsByQuery(name, page, size):
 
