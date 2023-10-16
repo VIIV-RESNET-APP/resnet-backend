@@ -46,7 +46,7 @@ class Neo4jService:
             OPTIONAL MATCH (ar:Article)-[:USES]-(to:Topic)
             WITH au, ar, aff, to
             ORDER BY au.first_name ASC, au.last_name ASC
-            RETURN au.scopus_id as scopus_id, 
+            RETURN au.scopus_id as scopusId, 
                 [au.first_name + " " + au.last_name, au.auth_name, au.initials] as names, 
                 collect(DISTINCT aff.name) as affiliations, 
                 count(DISTINCT ar) as articles, 
@@ -79,7 +79,7 @@ class Neo4jService:
                     additional_topics = session.read_transaction(self._execute_query, query)
 
                 for item in additional_topics:
-                    authorIndex = next((index for (index, d) in enumerate(authors) if d["scopus_id"] == item['scopus_id']), None)
+                    authorIndex = next((index for (index, d) in enumerate(authors) if d["scopusId"] == item['scopusId']), None)
                     if authorIndex is not None:
                         authors[authorIndex]['topics'] = item['topics']
 
