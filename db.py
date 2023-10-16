@@ -71,7 +71,7 @@ class Neo4jService:
                 WITH au, to, count(to.name) as frequency, collect(DISTINCT to.name) as cTopics 
                 ORDER BY au.first_name ASC, au.last_name ASC, frequency DESC
                 UNWIND cTopics as uTopics 
-                RETURN au.scopus_id as scopus_id, collect(DISTINCT uTopics) as topics
+                RETURN au.scopus_id as scopusId, collect(DISTINCT uTopics) as topics
                 SKIP {(page - 1) * size} LIMIT {size}
                 """
 
