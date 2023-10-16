@@ -3,22 +3,7 @@ from flask_cors import CORS
 from flask_restful import Resource, Api
 from flask_json import FlaskJSON, json_response
 
-from db import (
-    getAuthorsByQuery,
-    getAuthorById,
-    getArticleById,
-    getCoauthorsById,
-    getCommunity,
-    getMostRelevantAuthorByTopic,
-    getAffiliationsByAuthors,
-    getAuthorsByAffiliationFilters,
-    getMostRelevantArticlesByTopic,
-    getArticlesByIds,
-    getYearsByArticles,
-    getArticlesByFilterYears,
-    getRandomAuthors,
-    getRandomTopics,
-)
+from db import Neo4jService
 
 app = Flask(__name__)
 
@@ -27,6 +12,7 @@ FlaskJSON(app)
 
 api = Api(app)
 
+neo4j_service = Neo4jService()
 
 @api.representation("application/json")
 def output_json(data, code, headers=None):
@@ -38,12 +24,12 @@ class Authors(Resource):
         name = request.args.get("query").lower()
         page = int(request.args.get("page"))
         size = int(request.args.get("size"))
-        return getAuthorsByQuery(name, page, size)
+        return neo4j_service.getAuthorsByQuery(name, page, size)
 
 
 class Author(Resource):
     def get(self, id):
-        response = getAuthorById(id)
+        response = neo4j_service.getAuthorById(id)
         if response:
             return response
         else:
@@ -52,7 +38,7 @@ class Author(Resource):
 
 class Article(Resource):
     def get(self, id):
-        response = getArticleById(id)
+        response = neo4j_service.getArticleById(id)
         if response:
             return response
         else:
@@ -61,7 +47,7 @@ class Article(Resource):
 
 class Coauthors(Resource):
     def get(self, id):
-        response = getCoauthorsById(id)
+        response = neo4j_service.getCoauthorsById(id)
         return response
 
 
@@ -72,24 +58,24 @@ class MostRelevantAuthors(Resource):
         topic = request.get_json()["topic"].lower()
         authorsNumber = request.get_json()["authorsNumber"]
 
-        df = getMostRelevantAuthorByTopic(topic, authorsNumber)
+        df = neo4j_service.getMostRelevantAuthorByTopic(topic, authorsNumber)
 
-        response["affiliations"] = getAffiliationsByAuthors(df.index.to_list())
+        response["affiliations"] = neo4j_service.getAffiliationsByAuthors(df.index.to_list())
 
         if "type" in request.get_json():
             filterType = request.get_json()["type"]
             filterAffiliations = request.get_json()["affiliations"]
 
-            filteredAuthors = getAuthorsByAffiliationFilters(
+            filteredAuthors = neo4j_service.getAuthorsByAffiliationFilters(
                 filterType, filterAffiliations, df.index.to_list()
             )
 
-            response = {**response, **getCommunity(filteredAuthors)}
+            response = {**response, **neo4j_service.getCommunity(filteredAuthors)}
 
             return response
 
         else:
-            response = {**response, **getCommunity(df.index.to_list())}
+            response = {**response, **neo4j_service.getCommunity(df.index.to_list())}
 
             for index, weight in enumerate(df.values):
                 response["nodes"][index]["weight"] = weight
@@ -105,31 +91,31 @@ class MostRelevantArticles(Resource):
         page = request.get_json()["page"]
         size = request.get_json()["size"]
 
-        df = getMostRelevantArticlesByTopic(topic)
+        df = neo4j_service.getMostRelevantArticlesByTopic(topic)
 
-        response["years"] = getYearsByArticles(df.index.to_list())
+        response["years"] = neo4j_service.getYearsByArticles(df.index.to_list())
 
         if "type" in request.get_json():
             filterType = request.get_json()["type"]
             filterYears = request.get_json()["years"]
-            filteredArticles = getArticlesByFilterYears(
+            filteredArticles = neo4j_service.getArticlesByFilterYears(
                 filterType, filterYears, df.index.to_list()
             )
-            response = {**response, **getArticlesByIds(filteredArticles, page, size)}
+            response = {**response, **neo4j_service.getArticlesByIds(filteredArticles, page, size)}
         else:
-            response = {**response, **getArticlesByIds(df.index.to_list(), page, size)}
+            response = {**response, **neo4j_service.getArticlesByIds(df.index.to_list(), page, size)}
 
         return response
 
 
 class RandomAuthors(Resource):
     def get(self):
-        return getRandomAuthors()
+        return neo4j_service.getRandomAuthors()
 
 
 class RandomTopics(Resource):
     def get(self):
-        return getRandomTopics()
+        return neo4j_service.getRandomTopics()
 
 
 api.add_resource(Authors, "/authors/get-authors-by-query")
