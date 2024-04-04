@@ -51,16 +51,19 @@ class Neo4jService:
             OPTIONAL MATCH (aff:Affiliation)-[:AFFILIATED_WITH]-(au)
             OPTIONAL MATCH (au)-[:WROTE]-(ar:Article)
             OPTIONAL MATCH (ar:Article)-[:USES]-(to:Topic)
+            
+            
             WITH au, ar, aff, to
             ORDER BY au.first_name ASC, au.last_name ASC
+            
             RETURN au.scopus_id as scopusId, 
                 [au.first_name + " " + au.last_name, au.auth_name, au.initials] as names, 
                 collect(DISTINCT aff.name) as affiliations, 
                 count(DISTINCT ar) as articles, 
-                collect(DISTINCT to.name) as topics
+                collect(DISTINCT to.name) as topics,
+                au.role as role
             SKIP {(page - 1) * size} LIMIT {size}
             """
-
         with self._driver.session() as session:
             authors = session.read_transaction(self._execute_query, query)
 
