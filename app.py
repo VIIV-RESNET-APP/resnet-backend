@@ -14,6 +14,7 @@ api = Api(app)
 
 neo4j_service = Neo4jService()
 
+
 @api.representation("application/json")
 def output_json(data, code, headers=None):
     return json_response(data_=data, headers_=headers, status_=code)
@@ -118,6 +119,19 @@ class RandomTopics(Resource):
         return neo4j_service.getRandomTopics()
 
 
+class UpdateAuthorField(Resource):
+    def post(self):
+        data = request.get_json()
+        author_id = data.get("author_id")
+        field_name = data.get("field_name")
+        new_value = data.get("new_value")
+
+        if not all([author_id, field_name, new_value]):
+            return {'message': "All fields are required: author_id, field_name, new_value"}
+
+        return neo4j_service.updateAuthorField(field_name=field_name, id=author_id, new_value=new_value)
+
+
 api.add_resource(Authors, "/authors/get-authors-by-query")
 api.add_resource(MostRelevantAuthors, "/coauthors/most-relevant-authors")
 api.add_resource(Author, "/author/<string:id>")
@@ -126,3 +140,4 @@ api.add_resource(Coauthors, "/coauthors/<string:id>")
 api.add_resource(MostRelevantArticles, "/articles/most-relevant-articles")
 api.add_resource(RandomAuthors, "/random-authors")
 api.add_resource(RandomTopics, "/random-topics")
+api.add_resource(UpdateAuthorField, "/update-author-field/")

@@ -1,6 +1,7 @@
 from neo4j import GraphDatabase
 from tfidf import Model
 import config
+from unidecode import unidecode
 
 
 class Neo4jService:
@@ -10,12 +11,16 @@ class Neo4jService:
             auth=(config.DATABASE_USER, config.DATABASE_PASSWORD),
         )
 
-    def _execute_query(self, tx, query):
+    @staticmethod
+    def _execute_query(tx, query):
         result = tx.run(query)
         return result.data()
 
-    def getAuthorsByQuery(self, name, page, size):
-            query = f"""
+    def getAuthorsByQuery(self, name: str, page, size):
+
+        name = unidecode(name).strip().lower()
+
+        query = f"""
             MATCH (au:Author) 
             WHERE  toLower(au.first_name) CONTAINS '{name}' or 
                 toLower(au.last_name) CONTAINS '{name}' or 
@@ -23,16 +28,17 @@ class Neo4jService:
                 toLower(au.last_name) + " " + toLower(au.first_name) CONTAINS '{name}' or  
                 toLower(au.auth_name) CONTAINS '{name}' or 
                 toLower(au.initials) CONTAINS '{name}' or 
+                toLower(au.email) CONTAINS '{name}'or 
                 au.scopus_id CONTAINS '{name}'
             RETURN count(au) as total
             """
 
-            with self._driver.session() as session:
-                result = session.read_transaction(self._execute_query, query)
+        with self._driver.session() as session:
+            result = session.read_transaction(self._execute_query, query)
 
-            total = result[0]['total']
+        total = result[0]['total']
 
-            query = f"""
+        query = f"""
             MATCH (au:Author) 
             WHERE  toLower(au.first_name) CONTAINS '{name}' or 
                 toLower(au.last_name) CONTAINS '{name}' or 
@@ -40,6 +46,7 @@ class Neo4jService:
                 toLower(au.last_name) + " " + toLower(au.first_name) CONTAINS '{name}' or  
                 toLower(au.auth_name) CONTAINS '{name}' or 
                 toLower(au.initials) CONTAINS '{name}' or 
+                toLower(au.email) CONTAINS '{name}'or 
                 au.scopus_id CONTAINS '{name}'
             OPTIONAL MATCH (aff:Affiliation)-[:AFFILIATED_WITH]-(au)
             OPTIONAL MATCH (au)-[:WROTE]-(ar:Article)
@@ -54,11 +61,11 @@ class Neo4jService:
             SKIP {(page - 1) * size} LIMIT {size}
             """
 
-            with self._driver.session() as session:
-                authors = session.read_transaction(self._execute_query, query)
+        with self._driver.session() as session:
+            authors = session.read_transaction(self._execute_query, query)
 
-            if authors:
-                query = f"""
+        if authors:
+            query = f"""
                 MATCH (au:Author) 
                 WHERE  toLower(au.first_name) CONTAINS '{name}' or 
                     toLower(au.last_name) CONTAINS '{name}' or 
@@ -66,6 +73,7 @@ class Neo4jService:
                     toLower(au.last_name) + " " + toLower(au.first_name) CONTAINS '{name}' or  
                     toLower(au.auth_name) CONTAINS '{name}' or 
                     toLower(au.initials) CONTAINS '{name}' or 
+                    toLower(au.email) CONTAINS '{name}'or 
                     au.scopus_id CONTAINS '{name}'
                 OPTIONAL MATCH (au)-[:WROTE]-(ar:Article)-[:USES]-(to:Topic)
                 WITH au, to, count(to.name) as frequency, collect(DISTINCT to.name) as cTopics 
@@ -75,15 +83,16 @@ class Neo4jService:
                 SKIP {(page - 1) * size} LIMIT {size}
                 """
 
-                with self._driver.session() as session:
-                    additional_topics = session.read_transaction(self._execute_query, query)
+            with self._driver.session() as session:
+                additional_topics = session.read_transaction(self._execute_query, query)
 
-                for item in additional_topics:
-                    authorIndex = next((index for (index, d) in enumerate(authors) if d["scopusId"] == item['scopusId']), None)
-                    if authorIndex is not None:
-                        authors[authorIndex]['topics'] = item['topics']
+            for item in additional_topics:
+                authorIndex = next((index for (index, d) in enumerate(authors) if d["scopusId"] == item['scopusId']),
+                                   None)
+                if authorIndex is not None:
+                    authors[authorIndex]['topics'] = item['topics']
 
-            return {'total': total, 'data': authors}
+        return {'total': total, 'data': authors}
 
     def getAuthorById(self, id):
         # Consulta para obtener la información del autor
@@ -92,7 +101,7 @@ class Neo4jService:
         OPTIONAL MATCH (au)-[:AFFILIATED_WITH]-(af:Affiliation)
         OPTIONAL MATCH (au)-[:WROTE]-(ar:Article)
         RETURN au.scopus_id as scopusId, au.first_name as firstName, 
-            au.last_name as lastName, au.auth_name as authName, au.initials as initials, 
+            au.last_name as lastName, au.auth_name as authName, au.initials as initials, au.email as email, 
             collect(DISTINCT af.name) as affiliations, 
             collect(DISTINCT {{scopusId: ar.scopus_id, title: ar.title}}) as articles
         """
@@ -120,7 +129,7 @@ class Neo4jService:
         author['topics'] = topics
 
         return author
-    
+
     def getArticleById(self, id):
         query = f"""
         MATCH (ar:Article {{scopus_id: '{id}'}})
@@ -133,7 +142,7 @@ class Neo4jService:
             collect(DISTINCT af.name) as affiliations, 
             collect(DISTINCT to.name) as topics
         """
-        
+
         with self._driver.session() as session:
             result = session.read_transaction(self._execute_query, query)
 
@@ -141,7 +150,7 @@ class Neo4jService:
             return result[0]
         else:
             return None
-        
+
     def getCoauthorsById(self, id):
         query = f"""
         MATCH (au:Author {{scopus_id: '{id}'}})-[r1:CO_AUTHORED]-(coAu:Author)
@@ -184,7 +193,7 @@ class Neo4jService:
             links = []
 
         return {"nodes": nodes, "links": links}
-    
+
     def getCommunity(self, authList):
         auth_list_str = ', '.join([f'"{w}"' for w in authList])
 
@@ -217,7 +226,6 @@ class Neo4jService:
         links = result_links[0]['links']
 
         return {"nodes": nodes, "links": links, "sizeNodes": len(nodes), "sizeLinks": len(links)}
-    
 
     def getAffiliationsByAuthors(self, authList):
         auth_list_str = ', '.join([f'"{w}"' for w in authList])
@@ -234,7 +242,6 @@ class Neo4jService:
             result = session.read_transaction(self._execute_query, query)
 
         return result[0]['affiliations']
-    
 
     def getAuthorsByAffiliationFilters(self, filterType, affiliations, authors):
         filterType = '' if filterType == 'include' else 'not'
@@ -255,7 +262,7 @@ class Neo4jService:
             result = session.read_transaction(self._execute_query, query)
 
         return result[0]['authors']
-    
+
     def getArticlesByIds(self, articlesList, page, size):
         articles_list_str = ', '.join([f'"{w}"' for w in articlesList])
 
@@ -268,7 +275,7 @@ class Neo4jService:
         WITH ar, collect(DISTINCT au.auth_name) as authors
         RETURN ar.scopus_id as scopusId, ar.title as title,
             authors, ar.publication_date as publicationDate
-        SKIP {str((page-1)*size)} LIMIT {str(size)}
+        SKIP {str((page - 1) * size)} LIMIT {str(size)}
         """
 
         with self._driver.session() as session:
@@ -285,7 +292,7 @@ class Neo4jService:
             articles.append(article)
 
         return {'total': len(articlesList), 'data': articles}
-    
+
     def getYearsByArticles(self, articlesList):
         articles_list_str = ', '.join([f'"{w}"' for w in articlesList])
 
@@ -303,7 +310,7 @@ class Neo4jService:
         years = result[0]['years']
 
         return years
-    
+
     def getArticlesByFilterYears(self, filterType, years, articles):
         filterType = '' if filterType == 'include' else 'not'
 
@@ -323,15 +330,15 @@ class Neo4jService:
             result = session.read_transaction(self._execute_query, query)
 
         return result[0]['articles']
-    
+
     def getMostRelevantAuthorByTopic(self, topic, size):
         m = Model("author")
         return m.getMostRelevantDocsByTopic(topic, size)
-    
+
     def getMostRelevantArticlesByTopic(self, topic):
         m = Model('article')
         return m.getMostRelevantDocsByTopic(topic, None)
-    
+
     def getRandomAuthors(self):
         # Consulta para obtener autores aleatorios
         query = """
@@ -348,7 +355,7 @@ class Neo4jService:
             result = session.read_transaction(self._execute_query, query)
 
         return result
-    
+
     def getRandomTopics(self):
         # Consulta para obtener temas aleatorios
         query = """
@@ -367,3 +374,15 @@ class Neo4jService:
         items = result
 
         return items
+
+    def updateAuthorField(self, id, field_name, new_value):
+        query_update_author_field = f"""
+        MATCH (au:Author {{scopus_id: '{id}'}})
+        SET au.{field_name} = '{new_value}'
+        RETURN au
+        """
+
+        with self._driver.session() as session:
+            result = session.write_transaction(self._execute_query, query_update_author_field)
+
+        return result

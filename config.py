@@ -1,4 +1,4 @@
 # Configuración de la base de datos
-DATABASE_HOST = '20.121.143.210'
+DATABASE_HOST = 'localhost'
 DATABASE_USER = 'neo4j'
-DATABASE_PASSWORD = 'narias98'
+DATABASE_PASSWORD = 'resnetdb'
