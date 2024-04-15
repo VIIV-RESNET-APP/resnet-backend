@@ -59,14 +59,14 @@ class Neo4jService:
             RETURN au.scopus_id as scopusId, 
                 [au.first_name + " " + au.last_name, au.auth_name, au.initials] as names, 
                 collect(DISTINCT aff.name) as affiliations, 
-                count(DISTINCT ar) as articles, 
+                au.num_articles as articles, 
                 collect(DISTINCT to.name) as topics,
                 au.role as role
             SKIP {(page - 1) * size} LIMIT {size}
             """
+        # count(DISTINCT ar) as articles,
         with self._driver.session() as session:
             authors = session.read_transaction(self._execute_query, query)
-
         if authors:
             query = f"""
                 MATCH (au:Author) 
@@ -104,7 +104,7 @@ class Neo4jService:
         OPTIONAL MATCH (au)-[:AFFILIATED_WITH]-(af:Affiliation)
         OPTIONAL MATCH (au)-[:WROTE]-(ar:Article)
         RETURN au.scopus_id as scopusId, au.first_name as firstName, 
-            au.last_name as lastName, au.auth_name as authName, au.initials as initials, au.email as email, 
+            au.last_name as lastName, au.auth_name as authName, au.initials as initials, au.email as email, au.rol as rol, 
             collect(DISTINCT af.name) as affiliations, 
             collect(DISTINCT {{scopusId: ar.scopus_id, title: ar.title}}) as articles
         """
@@ -205,7 +205,7 @@ class Neo4jService:
         WITH [{auth_list_str}] as authList
         MATCH (au:Author)
         WHERE au.scopus_id IN authList
-        RETURN collect({{scopusId: au.scopus_id, initials: au.initials, 
+        RETURN collect({{scopusId: au.scopus_id, initials: au.initials, rol: au.rol, 
             firstName: au.first_name, lastName: au.last_name}}) as nodes
         """
 
@@ -388,4 +388,13 @@ class Neo4jService:
         with self._driver.session() as session:
             result = session.write_transaction(self._execute_query, query_update_author_field)
 
+        return result
+
+    def get_all_scopus_ids(self):
+        query = """
+        MATCH (au:Author)
+        RETURN au.scopus_id as scopusId
+        """
+        with self._driver.session() as session:
+            result = session.read_transaction(self._execute_query, query)
         return result

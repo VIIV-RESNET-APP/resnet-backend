@@ -1,4 +1,6 @@
 # Configuración de la base de datos
 DATABASE_HOST = 'localhost'
 DATABASE_USER = 'neo4j'
-DATABASE_PASSWORD = 'resnetdb'
+DATABASE_PASSWORD = 'resnet-filtered'
+# resnet-filtered
+# resnetdb

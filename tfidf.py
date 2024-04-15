@@ -7,11 +7,11 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from unidecode import unidecode
 import nltk
+
 nltk.download('stopwords')
 
 
 class Model:
-
     tokenizer = TfidfVectorizer().build_tokenizer()
 
     stop_words = [unidecode(stopW) for stopW in stopwords.words('english')]
@@ -25,7 +25,7 @@ class Model:
 
     def loadModel(self, type):
         if type == 'author':
-            path = 'models/model-v10.0.pkl'
+            path = 'models/model-v11.0.pkl'
         elif type == 'article':
             path = 'models/model-v9.0.pkl'
         else:
@@ -51,7 +51,7 @@ class Model:
                 data[tokenId] = [item[0] for item in self.model['matrix'].getcol(
                     tokenId).sorted_indices().toarray()]
             dfResult = pd.DataFrame(data=data, index=self.model['indexes'])
-
+            print(dfResult)
             if authorSize:
                 return dfResult[(dfResult != 0).all(1)].sum(axis=1).sort_values(ascending=False).head(authorSize)
             else:

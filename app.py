@@ -4,6 +4,7 @@ from flask_restful import Resource, Api
 from flask_json import FlaskJSON, json_response
 
 from db import Neo4jService
+from utils.request_elseriver_service import RequestElSevierService
 
 app = Flask(__name__)
 
@@ -77,7 +78,6 @@ class MostRelevantAuthors(Resource):
 
         else:
             response = {**response, **neo4j_service.getCommunity(df.index.to_list())}
-
             for index, weight in enumerate(df.values):
                 response["nodes"][index]["weight"] = weight
 
@@ -132,6 +132,24 @@ class UpdateAuthorField(Resource):
         return neo4j_service.updateAuthorField(field_name=field_name, id=author_id, new_value=new_value)
 
 
+class UpdateAuthorArticles(Resource):
+    def post(self):
+        articles = neo4j_service.get_all_scopus_ids()
+        request_elsevier = RequestElSevierService()
+        for article in articles:
+            current_article = article['scopusId']
+            response = request_elsevier.get_author_information(current_article)
+            dict_response = request_elsevier.convert_xml_to_json(response.content)
+            article_counts = request_elsevier.get_author_articles_count(dict_response)
+            neo4j_service.updateAuthorField(
+                new_value=article_counts,
+                field_name="num_articles",
+                id=current_article,
+            )
+            print(f"Updated article {current_article} with {article_counts} articles")
+        return articles
+
+
 api.add_resource(Authors, "/authors/get-authors-by-query")
 api.add_resource(MostRelevantAuthors, "/coauthors/most-relevant-authors")
 api.add_resource(Author, "/author/<string:id>")
@@ -141,3 +159,4 @@ api.add_resource(MostRelevantArticles, "/articles/most-relevant-articles")
 api.add_resource(RandomAuthors, "/random-authors")
 api.add_resource(RandomTopics, "/random-topics")
 api.add_resource(UpdateAuthorField, "/update-author-field/")
+api.add_resource(UpdateAuthorArticles, "/update-author-articles/")
