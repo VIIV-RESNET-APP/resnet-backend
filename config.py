@@ -2,6 +2,6 @@
 # DATABASE_HOST = 'localhost'
 DATABASE_HOST = 'host.docker.internal'
 DATABASE_USER = 'neo4j'
-DATABASE_PASSWORD = 'resnet-filtered'
+DATABASE_PASSWORD = 'narias98'
 # resnet-filtered
 # resnetdb
