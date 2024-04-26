@@ -31,4 +31,3 @@ CMD [ "flask", "run","--host","0.0.0.0","--port","5000"]
 #
 ## Usar un servidor WSGI como Gunicorn para producción
 #CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
-#
