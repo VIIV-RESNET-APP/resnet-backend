@@ -61,7 +61,7 @@ class Neo4jService:
                 collect(DISTINCT aff.name) as affiliations, 
                 au.num_articles as articles, 
                 collect(DISTINCT to.name) as topics,
-                au.role as role
+                au.rol as rol
             SKIP {(page - 1) * size} LIMIT {size}
             """
         # count(DISTINCT ar) as articles,
